@@ -8,10 +8,10 @@
     :div(_class="row")
         :div(_class="col-xs-5")
             :h2
-                My Tweets
+                All Tweets
         :div(_class="col-xs-7")
             :import "pagination/pagination.html"
-            :a(href="%s?refresh=1" % url("feeds"), _class="btn btn-sm btn-primary pull-right", style="margin-top: 22px")
+            :a(href="%s?refresh=1" % url("all_feeds"), _class="btn btn-sm btn-primary pull-right", style="margin-top: 22px")
                 <i class="fa fa-refresh"></i>
 
     :div(_class='col-3-flex')

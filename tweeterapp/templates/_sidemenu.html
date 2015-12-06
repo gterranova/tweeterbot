@@ -1,0 +1,54 @@
+:@first_collapsed = 'store' in repr(view).lower()
+:@second_collapsed = not first_collapsed
+
+:%accordion_panel(title, icon, dest, collapsed=True)
+    :div(_class="panel panel-default")
+        :div(_class="panel-heading")
+            :h4(_class="panel-title")
+                <a data-toggle="collapse" data-parent="#accordion" href="#${dest}"><span class="glyphicon glyphicon-${icon}">
+                </span>${title}</a>
+            
+        :div(_id=dest, _class="panel-collapse collapse ${not collapsed and 'in' or ''}")
+            :div(_class="panel-body")
+                :table(_class="table")
+                    :+
+
+:%accordion_item(title, url, icon)
+    :tr
+        :td
+            :i(_class="fa fa-${icon} text-primary")
+            :a(_href=url)
+                ${title}
+                
+:div(_class="panel-group", _id="accordion")
+    :accordion_panel("Content", "folder-close", "accordionOne", collapsed=first_collapsed)
+        :accordion_item("New tweet", url('home'), 'send')
+        :accordion_item("Feeds", url('feeds'), 'feed')
+        :accordion_item("All users feeds", url('all_feeds'), 'feed')
+
+    :accordion_panel("Tweet Store", "th", "accordionTwo", collapsed=second_collapsed)
+        :accordion_item("Add", url('tweetstore_add'), 'plus-square')
+        :accordion_item("Archive", url('tweetstore_index'), 'archive')
+
+
+    :#accordion_panel("Reports", "file", "accordionFour")
+        <tr>
+            <td>
+                <span class="glyphicon glyphicon-usd"></span><a href="http://www.jquery2dotnet.com">Sales</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="glyphicon glyphicon-user"></span><a href="http://www.jquery2dotnet.com">Customers</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="glyphicon glyphicon-tasks"></span><a href="http://www.jquery2dotnet.com">Products</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span class="glyphicon glyphicon-shopping-cart"></span><a href="http://www.jquery2dotnet.com">Shopping Cart</a>
+            </td>
+        </tr>

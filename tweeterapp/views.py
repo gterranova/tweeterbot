@@ -21,8 +21,8 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.contrib import messages
 
-from models import Tweet
-from forms import TweetForm
+from models import Tweet, TweetStore
+from forms import TweetForm, TweetStoreForm
 
 from social.backends.google import GooglePlusAuth
 from social.backends.utils import load_backends
@@ -59,6 +59,12 @@ class TweepyMixin(object):
         auth.set_access_token(access_token['oauth_token'], access_token['oauth_token_secret'])
         api = tweepy.API(auth)
         return api
+
+    def process_exc(self, e, user):
+        if self.request:
+            message = e.message
+            for msg in message:
+                messages.error(self.request, "(User %s) %s" % (user, msg['message']))
         
 class LogoutView(LoginRequiredMixin, generic.RedirectView):
     """Home view, displays login mechanism"""
@@ -75,12 +81,23 @@ class HomeView(AvailableBackendsMixin, TweepyMixin, generic.CreateView):
 
     def get_form(self):
         form = TweetForm(auto_id=False, **self.get_form_kwargs())
-        form.fields['author'].queryset = get_user_model().objects.filter(Q(is_staff=False) | Q(pk=self.request.user.id))
+        form.fields['author'].queryset = get_user_model().objects.filter(Q(is_staff=False) | Q(pk=self.request.user.id)).exclude(social_auth__iexact=None)
         return form
         
     def get_initial(self):
         initial = super(HomeView, self).get_initial()
         initial['author'] = self.request.user
+        if self.request.GET.get('random_content', 0):
+            random_tweet = TweetStore.objects.random()
+            if random_tweet:
+                initial['tweeet_store_id'] = random_tweet.id
+                initial['content'] = random_tweet.content
+        elif self.request.GET.get('stored_content', 0):
+            random_tweet = TweetStore.objects.get(pk=self.request.GET['stored_content'])
+            if random_tweet:
+                initial['tweeet_store_id'] = random_tweet.id
+                initial['content'] = random_tweet.content
+        
         return initial
         
     def get_success_url(self):
@@ -89,28 +106,71 @@ class HomeView(AvailableBackendsMixin, TweepyMixin, generic.CreateView):
     def form_valid(self, form):
         user = form.cleaned_data['author']
         content = form.cleaned_data['content']
-        api = self.get_twitter_api(user)
-        status = api.update_status(content)
 
         tweet = Tweet()
         tweet.author = user
-        tweet.twitter_id_str = status.id_str
-        tweet.published_at = status.created_at
-        tweet.content = status.text
+        if not self.request.POST.get('draft', 0):
+            api = self.get_twitter_api(user)
+            try:
+                status = api.update_status(content)
+                tweet.twitter_id_str = status.id_str
+                tweet.published_at = status.created_at
+                tweet.content = status.text
+            except tweepy.TweepError, e:
+                self.process_exc(e, user)
+        else:
+            tweet.content = content
+            
         tweet.save()
-        
+        tweeet_store_id = form.cleaned_data['tweeet_store_id']
+        if tweeet_store_id:
+            stored_tweet = TweetStore.objects.get(pk=tweeet_store_id)
+            stored_tweet.used = True
+            stored_tweet.save()
+            
         return HttpResponseRedirect(self.get_success_url())
-                    
+
+class TweetPublishView(LoginRequiredMixin, TweepyMixin, generic.DetailView):
+    """Home view, displays login mechanism"""
+    model = Tweet
+    def get(self, request, *args, **kwargs):
+        tweet = self.get_object()
+        api = self.get_twitter_api(tweet.user)
+        try:
+            status = api.update_status(tweet.content)
+            tweet.twitter_id_str = status.id_str
+            tweet.published_at = status.created_at
+            tweet.content = status.text
+            tweet.save()
+        except tweepy.TweepError, e:
+            self.process_exc(e, user)
+        return HttpResponseRedirect(reverse_lazy('feeds'))
+
+class TweetDeleteView(LoginRequiredMixin, AvailableBackendsMixin, generic.DeleteView):
+    model = Tweet
+    template_name = 'tweet_delete.html'
+    success_url = reverse_lazy('feeds')    
+        
 class TweetIndexView(LoginRequiredMixin, AvailableBackendsMixin, generic.ListView):
-    paginate_by = 10
+    paginate_by = 9
     model = Tweet
     template_name = 'feeds.html'
     context_object_name = 'tweets'
             
     def get_queryset(self):
         update = self.request.GET.get('refresh', 0)
-        return Tweet.objects.get_latest_tweets(self.request.user, update=update)
+        return Tweet.objects.get_latest_tweets(self.request.user, update=update, request=self.request)
 
+class AllTweetsIndexView(LoginRequiredMixin, AvailableBackendsMixin, generic.ListView):
+    paginate_by = 9
+    model = Tweet
+    template_name = 'all_feeds.html'
+    context_object_name = 'tweets'
+            
+    def get_queryset(self):
+        update = self.request.GET.get('refresh', 0)
+        return Tweet.objects.get_all_latest_tweets(update=update, request=self.request)
+        
 class RetweetRedirectView(LoginRequiredMixin, TweepyMixin, generic.RedirectView):
     permanent = False
     def get(self, request, *args, **kwargs):
@@ -120,17 +180,46 @@ class RetweetRedirectView(LoginRequiredMixin, TweepyMixin, generic.RedirectView)
         shuffle(users)
         if users and len(users) > 0:
             api = self.get_twitter_api(users[0])
-            response = api.retweet(tweet.twitter_id_str)
-            #print response, response.retweet_count
-            tweet.retwittered_by.add(users[0])
-            tweet.save()
-            messages.success(self.request, "Retweet by %s" % users[0])
+            try:
+                response = api.retweet(tweet.twitter_id_str)
+                #print response, response.retweet_count
+                tweet.retwittered_by.add(users[0])
+                tweet.save()
+                messages.success(self.request, "Retweet by %s" % users[0])
+            except tweepy.TweepError, e:
+                self.process_exc(e, user)
         else:
             messages.error(self.request, "No more users for retweetting")
             
         self.url = reverse_lazy('feeds')
         return super(RetweetRedirectView, self).get(request, args, **kwargs)
-        
+
+class TweetStoreIndexView(LoginRequiredMixin, AvailableBackendsMixin, generic.ListView):
+    paginate_by = 9
+    model = TweetStore
+    template_name = 'tweetstore_index.html'
+
+class TweetStoreCreateView(LoginRequiredMixin, AvailableBackendsMixin, generic.CreateView):
+    model = TweetStore
+    template_name = 'tweetstore_edit.html'
+    success_url = reverse_lazy('tweetstore_index')    
+
+    def get_form(self):
+        return TweetStoreForm(auto_id=False, **self.get_form_kwargs())
+    
+class TweetStoreUpdateView(LoginRequiredMixin, AvailableBackendsMixin, generic.UpdateView):
+    model = TweetStore
+    form_class = TweetStoreForm        
+    template_name = 'tweetstore_edit.html'
+    success_url = reverse_lazy('tweetstore_index')    
+    def get_form(self):
+        return TweetStoreForm(auto_id=False, **self.get_form_kwargs())
+
+class TweetStoreDeleteView(LoginRequiredMixin, AvailableBackendsMixin, generic.DeleteView):
+    model = TweetStore
+    template_name = 'tweetstore_delete.html'
+    success_url = reverse_lazy('tweetstore_index')    
+    
 @render_to('home.html')
 def validation_sent(request):
     return context(

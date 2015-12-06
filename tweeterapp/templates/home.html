@@ -7,24 +7,23 @@
 
 :%content
     :if user.is_authenticated()
-        :br
-        :div(_class="col-md-6 col-md-offset-3")
+        :h1(_class="text-center")
+            Something to share?
+        :div(_class="col-md-8 col-md-offset-2")
             :div(_class="card clearfix")
                 <form action="" method="POST">
                 <div class="card-content clearfix">
-                    :#<div class="title"><strong>${user}</strong>&nbsp;<span style="color: #999">@${user} &sdot; New</span></div>
                     :csrf_token_input
                     :div(_class="row")
                         ${form | bootstrap}
                 </div>
                 <div class="card-actions">
-                    <ul>
-                        <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Audio"><i class="fa fa-music"></i></a></li>
-                        <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Video"><i class="fa fa-video-camera"></i></a></li>
-                        <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Sound Record"><i class="fa fa-microphone"></i></a></li>
-                        <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Picture"><i class="fa fa-picture-o"></i></a></li>
-                    </ul>
-                    <button type="submit" class="btn btn-success green"><i class="fa fa-share"></i> Share</button>
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fa fa-share"></i> Share</button>
+                    :a(_class="btn btn-sm btn-default", href="%s?random_content=1" % url("home"))
+                        <i class="fa fa-random"></i> Random
+                    <button type="submit" class="btn btn-sm btn-success" name="draft" value="1"><i class="fa fa-save"></i> Save draft</button>
+
+                    :div(_class="clearfix")
                 </div>
                 </form>
     :else

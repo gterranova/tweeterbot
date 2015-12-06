@@ -106,9 +106,12 @@
 :%body_base
     <section id="content_body" class="wrapper">
         :div(_class="container")
-            :if len(messages)>0
-                :import "_messages.html"
-            :+
+            :div(_class="col-sm-3 col-md-3")
+                :import "_sidemenu.html"
+            :div(_class="col-sm-9 col-md-9")
+                :if len(messages)>0
+                    :import "_messages.html"
+                :+
     </section>
     
 :%content

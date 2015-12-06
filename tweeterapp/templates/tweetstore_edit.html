@@ -1,0 +1,31 @@
+:import "base.html"
+:@load_lib('bootstrap')
+:@load_lib('twitter_feed_tags')
+:@load_lib('backend_utils')
+:@body_class = (user.is_authenticated() != True) and 'home' or ''
+
+:%content
+    <div class="row">
+        <div class="col-md-12">
+        :h1(_class="text-center")
+            Add a tweet to the store
+        :div(_class="col-md-8 col-md-offset-2")
+            :div(_class="card clearfix")
+                <form action="" method="POST">
+                <div class="card-content clearfix">
+                    :csrf_token_input
+                    :div(_class="row")
+                        ${form | bootstrap}
+                </div>
+                <div class="card-actions">
+                    <ul>
+                        <li><a href="#"></a></li>
+                    </ul>
+                    <button type="submit" class="btn btn-sm btn-success green"><i class="fa fa-save"></i> Save</button>
+                    :div(_class="clearfix")
+                </div>
+                </form>
+    </div>
+:%footer_base
+:%footer
+:base(head_title="Store")

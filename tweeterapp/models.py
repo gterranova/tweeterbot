@@ -2,12 +2,24 @@ from __future__ import unicode_literals
 from django.db import models
 from django.conf import settings
 
+from django.db.models.aggregates import Count
+from random import randint
+from django.core.urlresolvers import reverse_lazy
+
 class TweetManager(models.Manager):
 
-    def get_latest_tweets(self, user, offset=0, limit=10, update=False):
+    def get_all_latest_tweets(self, offset=0, limit=10, update=False, request=None):
         if update:
             from import_tweets import ImportTweets
-            importer = ImportTweets()
+            importer = ImportTweets(request=request)
+            importer.update_tweets()
+        
+        return self.order_by('-published_at')[offset:limit]
+
+    def get_latest_tweets(self, user, offset=0, limit=10, update=False, request=None):
+        if update:
+            from import_tweets import ImportTweets
+            importer = ImportTweets(request=request)
             importer.update_user_tweets(user)
         
         return self.filter(author=user).order_by('-published_at')[offset:limit]
@@ -37,5 +49,25 @@ class Tweet(models.Model):
         verbose_name = 'Tweet'
         verbose_name_plural = 'Tweets'
 
+    def __unicode__(self):
+        return self.content
+
+class TweetStoreManager(models.Manager):
+    def random(self):
+        count = self.filter(used=False).aggregate(count=Count('id'))['count']
+        if count > 0:
+            random_index = randint(0, count - 1)
+            return self.filter(used=False)[random_index]        
+        return None
+        
+class TweetStore(models.Model):
+    content = models.TextField(u"Tweet Content", max_length=20000)
+    used = models.BooleanField(blank=True, default=False)
+    objects = TweetStoreManager()
+
+    class Meta:
+        verbose_name = 'Stored Tweet'
+        verbose_name_plural = 'Stored Tweets'
+        
     def __unicode__(self):
         return self.content
