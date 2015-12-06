@@ -136,7 +136,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static')
 
 SOCIAL_AUTH_TWITTER_KEY='Pmn1PSUEjRPBQNj5N2NlqgZF0' #aPPjGSzKevzuAmAbSCxkOWWm1'
 SOCIAL_AUTH_TWITTER_SECRET='rKgejho6yM4mMQmovpFMFE8bAfb5Meb9TwE2qBBhpyjlGfptgI' #0NUD8IdfJVl7vuVk2BoLD1q5L6YledVmnDrPZA81ztqXTVkktt'
