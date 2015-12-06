@@ -19,4 +19,4 @@ class Command(BaseCommand):
             entries.append(TweetStore(content=tweet[0]))
             
         TweetStore.objects.bulk_create(entries)
-        self.stdout.write(self.style.SUCCESS('Successfully stored %d status' % len(entries)))
+        self.stdout.write('Successfully stored %d status' % len(entries))
