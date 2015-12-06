@@ -1,0 +1,110 @@
+:@
+    import os
+    import errno, shutil
+    import re
+
+    def is_not_empty(fpath):
+        if os.path.isfile(fpath) and os.path.getsize(fpath) > 0:
+            return True
+        return False
+
+    def mkdir_p(path):
+        try:
+            os.makedirs(path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else: raise
+
+    def copytree(src_dir, dest_dir):
+        #print "Copy", src_dir, dest_dir
+        if not os.path.exists(src_dir):
+            raise Exception("Source path %s not found in %s (args %r)" % (src_dir, os.getcwd(), item.args))
+
+        mkdir_p(dest_dir) # create the dir if not exists
+        for root, dirs, files in os.walk(src_dir): # recurse walking
+            for thefile in files:
+                out_file = os.path.join(dest_dir, root[len(src_dir)+1:], thefile).replace('\\','/')
+                out_dir = os.path.dirname(out_file)
+                mkdir_p(out_dir) # create the dir if not exists
+                #print os.path.join(root, thefile), out_file
+                shutil.copy2(os.path.join(root, thefile), out_file) #copy file
+
+    def interpolate(text, scope):
+        mark = re.compile('\${([^\$]*?)}')
+        for item in mark.findall(text):
+            if 1: #try:
+                v = eval(item, scope)
+                text = text.replace(u'${%s}'%item, v)
+            ##except:
+            ##    pass
+        return text
+    
+:%processtree(src_dir, dst_dir)
+    :@src_dir = os.path.abspath(src_dir)
+    :@dst_dir = os.path.abspath(dst_dir)
+    :if not os.path.exists(src_dir)
+        :@raise Exception("Source path %s not found in %s (args %r)" % (src_dir, os.getcwd(), item.args))
+
+    :#old_dir = os.getcwd()
+    :#@os.chdir(os.path.dirname(src_dir))
+    :@mkdir_p(dst_dir)
+    :for root, dirs, files in os.walk(src_dir)
+        :for thefile in files
+            :@
+                out_file = os.path.join(dst_dir, root[len(src_dir)+1:], thefile).replace('\\','/')
+                out_dir = interpolate(os.path.dirname(out_file), globals())
+                mkdir_p(out_dir)
+
+            :if thefile.endswith('.html.flt')
+                :export "${out_file[:-4]}"
+                    :html()
+                        :import "${os.path.join(root, thefile)}"
+            :if thefile.endswith('.flt')
+                :export "${out_file[:-4]}"
+                    :import "${os.path.join(root, thefile)}"
+            :else
+                :@out_file = interpolate(out_file, globals())
+                :@shutil.copy2(os.path.join(root, thefile), out_file)
+
+:%import_or_default(src)
+    :if is_not_empty(src)
+        :import "${src}"
+    :elif not os.path.exists(src)
+        :export <${src}.default>
+            :raw
+                :+
+        :+
+
+:%html()
+    :%renderer(__tag__, **kwargs)
+        :@
+            try:
+                keys = kwargs.keys()
+                for k in keys:
+                    kwargs[k] = str(kwargs[k]).replace('"', "'")
+                    if k[0] == "_":
+                        kwargs[k[1:]] = str(kwargs[k])
+                        del kwargs[k]
+                    elif '_' in k:
+                        kwargs[k.replace('_','-')] = str(kwargs[k])
+                        del kwargs[k]
+                    else:
+                        kwargs[k] = str(kwargs[k])
+
+                attr=len(kwargs) and ' %s' % (' '.join(["%s=\"%s\"" % (k, v) for k, v in kwargs.items()])) or ''
+            except Exception, e:
+                import warnings
+                warnings.warn("Here %s" % repr(e))
+                attr = ''
+        :if __tag__ in ('br', 'img', 'meta', 'link')
+            <${__tag__}${attr} />
+        :else
+            <${__tag__}${attr}>
+                :+
+            </${__tag__}>
+
+
+:%if_default_or_not_empty(src)
+    :if is_not_empty(src) or not os.path.exists(src)
+        :+

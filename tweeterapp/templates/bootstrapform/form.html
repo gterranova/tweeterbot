@@ -1,0 +1,12 @@
+:if form.non_field_errors()
+    <div class="alert alert-danger">
+        <a class="close" data-dismiss="alert">&times;</a>
+        :for non_field_error in form.non_field_errors()
+             ${non_field_error}
+    </div>
+:div(_class="col-md-12")
+    :for field in form.hidden_fields
+        ${field}
+    :for field in form.visible_fields()
+        :@add_input_classes(field)
+        :import "bootstrapform/field.html"

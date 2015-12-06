@@ -1,0 +1,85 @@
+:@required_css_class=''
+:@form_error_css_class=''
+:@classes_value = ''
+<div class="form-group${field.errors and ' has-error' or ''}">
+    :if field|is_checkbox
+        <div class="${classes_value}">
+            <div class="checkbox">
+                :#if field.auto_id
+                :@label_class=(field.field.required and required_css_class) and 'class="%s"' % required_css_class or ''
+                <label ${label_class}>
+                    ${field} <span>${field.label}</span>
+                </label>
+                :for error in field.errors
+                    <span class="help-block ${form_error_css_class}">${error}</span>
+
+                :if field.help_text
+                    <p class="help-block">
+                        ${field.help_text|safe}
+                    </p>
+            </div>
+        </div>
+    :elif field|is_radio
+        :if field.auto_id
+            :@label_class=(field.field.required) and required_css_class or ''
+            <label class="control-label ${label_class}">${field.label}</label>
+
+        <div class="${classes_value}">
+            :for choice in field 
+                <div class="radio">
+                    <label>
+                        ${choice.tag}
+                        ${choice.choice_label}
+                    </label>
+                </div>
+
+            :for error in field.errors
+                <span class="help-block ${form_error_css_class}">${error}</span>
+
+            :if field.help_text
+                <p class="help-block">
+                    {{ field.help_text|safe }}
+                </p>
+        </div>
+    :elif field|is_file
+        :if field.auto_id
+            :@label_class=field.field.required and required_css_class or ''
+            <label class="control-label ${label_class}" for="${field.auto_id}">${field.label}</label>
+
+        <div class="">
+            ${field}
+
+            :for error in field.errors
+                <span class="help-block ${form_error_css_class}">${error}</span>
+            :if field.help_text 
+                <p class="help-block">
+                    ${field.help_text|safe}
+                </p>
+        </div>
+    :else
+        :#elif (field|is_multiple_select2) or (field|is_select2) or (field|is_html)
+            :if field.auto_id
+                :@label_class=field.field.required and required_css_class or ''
+                <label class="control-label ${label_class}" for="${field.auto_id}">${field.label}</label>
+            :div
+                ${field}
+                :for error in field.errors
+                    <span class="help-block ${form_error_css_class}">${error}</span>
+                :if field.help_text 
+                    <p class="help-block">
+                        ${field.help_text|safe}
+                    </p>
+        :if field.auto_id
+            :@label_class=field.field.required and required_css_class or ''
+            <label class="control-label ${label_class}" for="${field.auto_id}">${field.label}</label>
+
+        :div(_class="${classes_value} ${field|is_multiple_checkbox and 'multiple-checkbox' or ''}")
+            ${field}
+            :for error in field.errors
+                <span class="help-block ${form_error_css_class}">${error}</span>
+            :if field.help_text 
+                <p class="help-block">
+                    ${field.help_text|safe}
+                </p>
+
+</div>

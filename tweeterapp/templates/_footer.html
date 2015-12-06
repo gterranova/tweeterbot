@@ -1,0 +1,15 @@
+:@trans= lambda s: s
+:div(_class="container")
+    :div(_class="row footer")
+        :div(_class="col-md-6")
+            :p()
+                &copy; 2014, 
+                :a(href="mailto:gianpaoloterranova@gmail.com")
+                    :strong()
+                        ${trans("Test application.")}
+                :a(ng_href="#!/pages/privacy-policy")
+                    Privacy Policy
+        :div(_class="col-md-6")
+            :p(_class="text-right")
+                &nbsp;
+

@@ -12,6 +12,14 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+DEFAULT_CHARSET = 'utf-8'
+import sys
+reload(sys)
+sys.setdefaultencoding(DEFAULT_CHARSET)
+
+SITE_ID = 1
+WEB_URL = 'http://lab.terranovanet.it'
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'social.apps.django_app.default',
     'tweeterapp',
 ]
@@ -56,8 +65,10 @@ ROOT_URLCONF = 'tweeterbot.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'BACKEND': 'pymod.pymod_template.backends.django_pymod.HybridPymodTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,6 +76,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'pymod.pymod_template.context_processors.base',
+                'tweeterapp.context_processors.theme',
+                #'tweeterapp.context_processors.available_backends',
                 'social.apps.django_app.context_processors.backends',
             ],
         },
@@ -216,7 +230,7 @@ AUTHENTICATION_BACKENDS = (
 AUTH_USER_MODEL = 'auth.User'
 
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/done/'
+LOGIN_REDIRECT_URL = '/'
 URL_PATH = ''
 SOCIAL_AUTH_STRATEGY = 'social.strategies.django_strategy.DjangoStrategy'
 SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'

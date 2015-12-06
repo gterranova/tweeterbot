@@ -1,0 +1,85 @@
+:@
+    from social.apps.django_app.default.models import UserSocialAuth
+    from django.conf import settings
+    from social.backends.utils import load_backends
+    available_backends = load_backends(settings.AUTHENTICATION_BACKENDS)
+    if user.is_authenticated():
+        associated_backends = dict([(b.provider, b) for b in user.social_auth.all()])
+    else:
+        associated_backends = {}
+    
+:%social_auth()
+    :div(_class="social")
+        :div(_class="row")
+            :for name, backend in available_backends.items()
+                :@backend = backend()
+                :@association = associated_backends.get(backend.name, False)
+                :if association
+                    :@this_url = url('social:disconnect_individual', kwargs={'backend': association.provider, 'association_id': association.id})
+                    :form(_class="disconnect-form col-md-6", _id="${name}-disconnect", action="${this_url}", method="post")
+                        <input type='hidden' name='csrfmiddlewaretoken' value='${csrf_token}' />
+                        :a(_class="col-md-12 btn btn-danger", name="${backend|backend_class}", href="#")
+                            :i(_class="fa fa-${name|icon_name}")
+                            Disconnect ${(backend | backend_name).split()[0] }
+
+                :else
+                    :if name == "google-plus"
+                        :div(_class="col-md-6 btn btn-default", _id="${name}-button", name="${backend|backend_class}")
+                            :i(_class="fa fa-${name|icon_name}")
+                            ${(backend | backend_name).split()[0] }
+                    :else
+                        :@this_url = url('social:begin', kwargs={'backend': name})
+                        :a(_class="col-md-6 btn btn-default", _id="${name}-button", name="${backend|backend_class}", href="${this_url}")
+                            :i(_class="fa fa-${name|icon_name}")
+                            ${(backend | backend_name).split()[0] }
+
+            :if context.get('backend', False)
+              <div id="email-required-modal" class="modal fade">
+                :form(action=url("social:complete", kwargs={'backend': backend}), method="post", role="form")
+                  :csrf_token_input
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Email required</h4>
+                      </div>
+
+                      <div class="modal-body">
+                        <p>An email address is required.</p>
+                        <div class="form-group">
+                          <label class="control-label" for="email">Email address:</label>
+                          <input class="form-control" id="email" type="email" name="email" value="" />
+                        </div>
+                      </div>
+
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Continue</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            <script type="text/javascript">
+              var modalDialog = function (modalId, modalLinkName, submitHandler) {
+                var $modal;
+                $modal = $(modalId).modal({show: false});
+                $modal.on('click', '.btn-primary', submitHandler || function (event) {
+                  event.preventDefault();
+                  $modal.find('form').submit();
+                });
+                if (modalLinkName) {
+                  $('a[name="' + modalLinkName + '"]').on('click', function (event) {
+                    event.preventDefault();
+                    $modal.modal('toggle');
+                  });
+                }
+                return $modal;
+              };
+              $(function () {
+                var $emailRequired;
+                $emailRequired = modalDialog('#email-required-modal');            
+                :if context.get('email_required')
+                  $emailRequired.modal('show');
+              });
+            </script>

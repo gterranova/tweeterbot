@@ -1,0 +1,57 @@
+:@trans = lambda s: s
+:@user_display = lambda u: u.profile and str(u.profile) or u.username
+    
+:#{% load i18n %}
+:#load_lib('account_tags')
+
+{% load backend_utils %}
+{% for sublist in available_backends|social_backends %}
+  {% for name, backend in sublist %}
+      {% associated backend %}
+      {% if association %}
+        <form style="dispaly:none" class="disconnect-form col-md-2" id="{{ name }}-disconnect" action="{% url "social:disconnect_individual" backend=association.provider association_id=association.id %}" method="post" style="width: 100%; margin: 0; padding: 0">
+          :csrf_token_input
+        </form>              
+      {% endif %}
+  {% endfor %}
+{% endfor %}
+
+<div class="navbar-right">
+    :if user.is_authenticated()
+        <ul class="nav navbar-nav pull-right">
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    :#img(_class="img-responsive img-circle", src=user.profile.get_avatar_url('avatar-xsmall'), style="display: table-cell; padding: 5px")
+                    ${user}
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    :#
+                        <li>
+                            :a(href=url("profiles:detail", kwargs={'pk': user.profile.id}))
+                                <i class="fa fa-user"></i>&nbsp;${trans("My Profile")}
+                        </li>
+                        <li><a href="${url("account_settings")}"><i class="fa fa-cogs"></i>&nbsp;${trans("Settings")}</a></li>
+                        :if THEME_ACCOUNT_ADMIN_URL and user.is_staff
+                            <li><a href="/admin"><i class="fa fa-cogs"></i>&nbsp;${trans("Admin")}</a></li>
+                        <li class="divider"></li>                        
+                        
+                    <li>
+                        <a id="disconnect" href="#">
+                            <i class="fa fa-{{ 'twitter'|icon_name }}"></i>
+                            Disconnect
+                        </a>
+                        <script>
+                            $('#disconnect').click(function(){console.log("click"); $('#twitter-disconnect').submit();});
+                        </script>
+                    </li>
+                    <li><a href="${url("logout")}"><i class="fa fa-power-off"></i>&nbsp;${trans("Log out")}</a></li>
+                </ul>
+            </li>
+        </ul>
+    :else
+        :span(_class="navbar-text")
+            :a(href=url("social:begin", kwargs={'backend':'twitter'}))
+                <i class="fa fa-{{ 'twitter'|icon_name }}"></i>
+                ${trans("Log in with twitter")}
+</div>

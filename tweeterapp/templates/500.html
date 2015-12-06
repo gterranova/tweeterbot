@@ -1,0 +1,33 @@
+:@SITE_NAME = "Sitename" 
+:@LANGUAGE_CODE = "en"
+:@body_class = ''
+:@body_id = ''
+:@body_extra_attributes = {}
+:import "base.html"
+:@trans = lambda s: s 
+:@head_title = trans("Server Error")
+
+<!doctype html>
+<!--[if lt IE 7]>      <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="${LANGUAGE_CODE}" class="no-js" lang="en"> <!--<![endif]-->
+:%content()
+    <header class="jumbotron subhead" id="overview">
+        <h1>${trans("Something went wrong")}</h1>
+        <p class="lead">${trans("We're sorry but a server error has occurred. We've been notified and will look into it as soon as possible.")}</p>
+        :=context
+    </header>
+    
+:html()
+    :head()
+        :meta_base()
+        <title>${head_title}</title>
+        :style_base()
+        :theme_style()
+    :body(_class=body_class, _id=body_id, **body_extra_attributes)            
+        :body_wrapper()
+            :content()
+            :footer_base()
+                :footer()
+        :script_base()

@@ -19,12 +19,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^email-sent/', 'tweeterapp.views.validation_sent'),
-    url(r'^login/$', 'tweeterapp.views.home'),
-    url(r'^logout/$', 'tweeterapp.views.logout'),
-    url(r'^done/$', 'tweeterapp.views.done', name='done'),
-    url(r'^ajax-auth/(?P<backend>[^/]+)/$', 'tweeterapp.views.ajax_auth',
-        name='ajax-auth'),
-    url(r'^email/$', 'tweeterapp.views.require_email', name='require_email'),
+    url(r'', include('tweeterapp.urls')),    
     url(r'', include('social.apps.django_app.urls', namespace='social'))    
 ]

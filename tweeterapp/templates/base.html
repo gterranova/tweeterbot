@@ -1,0 +1,155 @@
+:import "common.flt"
+
+:%csrf_token_input
+    <input type='hidden' name='csrfmiddlewaretoken' value='${csrf_token}' />
+    
+:#@load_lib('backend_utils')
+:#@load_lib('staticfiles')
+
+:@
+    LANGUAGE_CODE = 'en'
+    head_title = ''
+    body_class = user.is_authenticated() == True and '' or 'home'
+    body_id = ''
+    body_extra_attributes = {'ng-app': 'app'}
+    navbar_class = 'navbar-fixed-top'
+    
+:%stylesheet(f)
+    <link href="${f}" rel="stylesheet">
+
+:%google_analytics
+    <!-- Google Analytics -->
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        ga('create', 'UA-51881839-1');
+    </script>
+    <!-- End Google Analytics -->
+
+:%html5shim
+    <!-- HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <![endif]-->
+
+:%style_base
+    :stylesheet("/static/css/${THEME_ACCOUNT_BOOTSTRAP_THEME}/bootstrap.min.css")
+    :#stylesheet("//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css")
+    :stylesheet("/static/css/font-awesome.min.css")
+    :stylesheet("/static/css/main.css")
+    
+:%theme_style
+    
+:%meta_base
+    <meta charset="utf-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="" name="description">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+:%script_base
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/static/js/underscore-min.js"></script>
+    <script type="text/javascript" src="/static/js/angular.min.js"></script>
+    <script type="text/javascript" src="/static/js/angular-animate.min.js"></script>    
+    <script type="text/javascript" src="/static/js/main.js"></script>    
+    :#
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.2/underscore-min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular-animate.min.js"></script>    
+        <script type="text/javascript" src="/site_media/static/js/main.js"></script>    
+    
+:%theme_script    
+    
+:%body_wrapper
+    
+:%topbar_base
+    <header>
+        <div class="navbar navbar-default ${navbar_class}">
+            <div class="container">
+                :+
+            </div>
+        </div>
+    </header>
+
+:%site_brand
+    <a class="navbar-brand" href="${url('home')}"><img class="inline" src="/static/images/logo_small.png" />${SITE_NAME}</a>
+
+:%nav
+    :#
+        {% comment %}
+            <ul class="nav navbar-nav">
+                <li><a href="#tab_one">One</a></li>
+                <li><a href="#tab_two">Two</a></li>
+            </ul>
+        {% endcomment %}
+
+:%account_bar
+    :import "_account_bar.html"
+
+:%topbar
+    <div class="navbar-header">
+        <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="fa fa-bars"></span>
+        </button>
+        :site_brand
+    </div>
+    <div class="collapse navbar-collapse navbar-responsive-collapse">
+        :nav
+        :account_bar
+    </div>
+    
+:%body_base
+    <section id="content_body" class="wrapper">
+        :div(_class="container")
+            :if len(messages)>0
+                :import "_messages.html"
+            :+
+    </section>
+    
+:%content
+    
+:%footer_base
+    <hr />
+    <footer>
+        :+
+    </footer>
+
+:%footer
+    :import "_footer.html"
+    
+    
+:%extra_body_base
+    
+:%extra_body
+    
+:%base(site_name=SITE_NAME, head_title=head_title)
+    <!doctype html>
+    <!--[if lt IE 7]>      <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+    <!--[if IE 7]>         <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+    <!--[if IE 8]>         <html lang="${LANGUAGE_CODE}" class="no-js lt-ie9"> <![endif]-->
+    <!--[if gt IE 8]><!--> <html lang="${LANGUAGE_CODE}" class="no-js" lang="en"> <!--<![endif]-->
+    :html
+        :head
+            :meta_base
+            <title>${site_name} | ${head_title}</title>
+            :html5shim
+            :style_base
+                :theme_style
+            :script_base
+                :theme_script
+        :body(_class=body_class, _id=body_id, **body_extra_attributes)            
+            :body_wrapper
+                :topbar_base
+                    :topbar
+                :body_base
+                    :content
+                :footer_base
+                    :footer
+            :extra_body_base
+                :extra_body
+    </html>

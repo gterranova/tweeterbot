@@ -1,0 +1,39 @@
+:import "base.html"
+:@load_lib('bootstrap')
+:@load_lib('twitter_feed_tags')
+:@load_lib('backend_utils')
+:@body_class = (user.is_authenticated() != True) and 'home' or ''
+
+:%content
+    <div class="row">
+        <div class="col-md-12">
+            :h2
+                Latest tweets
+                :a(href="%s?refresh=1" % url("feeds"), _class="btn btn-primary pull-right")
+                    <i class="fa fa-refresh"></i>
+        </div>
+        :for tweet in tweets
+            <div class="col-md-6">
+            :div(_class="card clearfix")
+                <div class="card-content">
+                    <div class="title"><strong>${tweet.author}</strong>&nbsp;<span style="color: #999">@${tweet.author.username} &sdot; ${tweet.published_at}</span></div>
+                    <div class="medium">${tweet.content|urlize|linkify_twitter_status|url_target_blank}</div>
+                </div>
+                <div class="card-actions">
+                    :if tweet.published_at == None
+                        <paper-button>Publish</paper-button>
+                    :else
+                        <ul>
+                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Audio"><i class="fa fa-music"></i></a></li>
+                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Video"><i class="fa fa-video-camera"></i></a></li>
+                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Sound Record"><i class="fa fa-microphone"></i></a></li>
+                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Picture"><i class="fa fa-picture-o"></i></a></li>
+                        </ul>
+                        :a(_class="btn btn-warning", href=url("retweet", kwargs={'pk': tweet.id}))
+                            <i class="fa fa-retweet"></i> Retweet
+                </div>
+            </div>
+    </div>
+:%footer_base
+:%footer
+:base(head_title="Feed")
