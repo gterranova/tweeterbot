@@ -8,24 +8,24 @@ from django.core.urlresolvers import reverse_lazy
 
 class TweetManager(models.Manager):
 
-    def get_all_latest_tweets(self, offset=0, limit=10, update=False, request=None):
+    def get_all_latest_tweets(self, update=False, request=None):
         if update:
             from import_tweets import ImportTweets
             importer = ImportTweets(request=request)
             importer.update_tweets()
         
-        return self.order_by('-published_at')[offset:limit]
+        return self.order_by('-published_at')
 
-    def get_latest_tweets(self, user, offset=0, limit=10, update=False, request=None):
+    def get_latest_tweets(self, user, update=False, request=None):
         if update:
             from import_tweets import ImportTweets
             importer = ImportTweets(request=request)
             importer.update_user_tweets(user)
         
-        return self.filter(author=user).order_by('-published_at')[offset:limit]
+        return self.filter(author=user).order_by('-published_at')
 
-    def get_unpublished_tweets(self, user, offset=0, limit=10):
-        return self.filter(author=user, published_at__isnull=True).order_by('-created_at')[offset:limit]
+    def get_unpublished_tweets(self, user):
+        return self.filter(author=user, published_at__isnull=True).order_by('-created_at')
         
     def remove_all(self, user):
         self.filter(author=user, published_at__isnull=False).delete()
@@ -39,6 +39,11 @@ class Tweet(models.Model):
     content = models.TextField(u"Tweet Content", max_length=20000)
     twitter_id_str = models.CharField(u"Twitter Id", max_length=32, blank=True)    
     retwittered_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='retwits', blank=True)    
+    
+    # Engagement - not likely to be very useful for streamed tweets but whatever
+    favorite_count = models.PositiveIntegerField(null=True, blank=True)
+    retweet_count = models.PositiveIntegerField(null=True, blank=True)
+
     published_at = models.DateTimeField(u"Published At", blank=True, null=True)
     updated_at = models.DateTimeField(u"Last Update", auto_now=True)
     created_at = models.DateTimeField(u"Date", auto_now_add=True)

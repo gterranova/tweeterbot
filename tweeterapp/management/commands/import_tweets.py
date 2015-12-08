@@ -13,10 +13,13 @@ class Command(BaseCommand):
         f = open(options['filename'], 'r')
         tweets = json.load(f)
         f.close()
+        saved_count = 0
         
         entries = []
         for tweet in tweets:
-            entries.append(TweetStore(content=tweet[0]))
+            if len(tweet[0]) >= 140:
+                saved_count += 1
+                entries.append(TweetStore(content=tweet[0]))
             
         TweetStore.objects.bulk_create(entries)
-        self.stdout.write('Successfully stored %d status' % len(entries))
+        self.stdout.write('Successfully stored %d out of %d status' % (saved_count, len(entries)))

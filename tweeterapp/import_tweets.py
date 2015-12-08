@@ -23,7 +23,7 @@ class ImportTweets:
         if user.social_auth.count() > 0:
             raw_tweets = self._get_latest_tweets_from_api(user)
             tweets = [self._tweepy_status_to_tweet(user, status=status) for status in raw_tweets]
-            self._replace_all_tweets(user, tweets)
+            ##self._replace_all_tweets(user, tweets)
                 
     def _get_latest_tweets_from_api(self, user):
         """
@@ -44,11 +44,25 @@ class ImportTweets:
         """
         Fields documentation: https://dev.twitter.com/docs/api/1.1/get/statuses/home_timeline
         """
-        tweet = Tweet()
-        tweet.author = user
-        tweet.twitter_id_str = status.id_str
-        tweet.published_at = status.created_at
-        tweet.content = status.text
+        tweet, created = user.twits.get_or_create(twitter_id_str=status.id_str, defaults={'published_at': status.created_at, 'content': status.text})
+        
+        if tweet.favorite_count != status.favorite_count or tweet.retweet_count != status.retweet_count:
+            tweet.favorite_count = status.favorite_count
+            tweet.retweet_count = status.retweet_count
+            tweet.save()
+        
+        if hasattr(status, 'retweeted_status'):
+            username = status.retweeted_status.author.screen_name
+            try:
+                retweeted_user = User.objects.get(username=username)
+                retweeted_tweet = self._tweepy_status_to_tweet(retweeted_user, status.retweeted_status)
+                if user not in list(retweeted_tweet.retwittered_by.all()):
+                    retweeted_tweet.retwittered_by.add(user)
+                    retweeted_tweet.save()
+                    #print "Added %s to tweet %d by %s" % (user, retweeted_tweet.id, username)
+            except User.DoesNotExist:
+                #print "RT by %s not managed by the app" % (username,)
+                pass
 
         return tweet
 

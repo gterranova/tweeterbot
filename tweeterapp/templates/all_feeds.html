@@ -18,17 +18,33 @@
         :for tweet in tweets
             :div(_class="card clearfix")
                 <div class="card-content">
-                    <div class="title"><strong>${tweet.author}</strong>&nbsp;<span style="color: #999">@${tweet.author.username} &sdot; ${tweet.published_at}</span></div>
+                    <div class="title">
+                        <strong>${tweet.author}</strong>&nbsp;
+                    </div>
+                    <span class="small"><a title="@${tweet.author.username} on Twitter" href="http://twitter.com/barbara_arfelli" target="_blank" style="color: #999">@${tweet.author.username}</a>
+                        &sdot; ${tweet.published_at.strftime('%d %b %y %H:%M')}
+                    </span>
                     <div class="medium">${tweet.content|urlize|linkify_twitter_status|url_target_blank}</div>
                 </div>
                 <div class="card-actions">
                     <ul>
-                        <li><a href="#"></a></li>
-                        :#
-                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Audio"><i class="fa fa-music"></i></a></li>
-                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Video"><i class="fa fa-video-camera"></i></a></li>
-                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Sound Record"><i class="fa fa-microphone"></i></a></li>
-                            <li><a title="" data-toggle="tooltip" data-placement="bottom" data-original-title="Picture"><i class="fa fa-picture-o"></i></a></li>
+                        <li><span>                        
+                        <i class="fa fa-retweet"></i>
+                        :#if tweet.retweet_count
+                            <span class="badge" style="position: relative; top: -41px; right: -15px; background-color: red; font-size: 80%;">${tweet.retweet_count}</span>
+                        :if tweet.retweet_count
+                            :strong
+                                ${tweet.retweet_count}
+                        </span></li>
+                        
+                        <li><span>
+                        <i class="fa fa-heart"></i>
+                        :#if tweet.favorite_count
+                            <span class="badge" style="position: relative; top: -41px; right: -15px; background-color: red; font-size: 80%;">${tweet.favorite_count}</span>
+                        :if tweet.favorite_count
+                            :strong
+                                ${tweet.retweet_count}
+                        </span></li>
                     </ul>
                     :if tweet.published_at == None
                         :a(_class="btn btn-sm btn-success", href=url("publish", kwargs={'pk': tweet.id}))
