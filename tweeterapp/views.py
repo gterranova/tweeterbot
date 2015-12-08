@@ -134,9 +134,13 @@ class HomeView(AvailableBackendsMixin, TweepyMixin, generic.CreateView):
 class TweetPublishView(LoginRequiredMixin, TweepyMixin, generic.DetailView):
     """Home view, displays login mechanism"""
     model = Tweet
+    def get_queryset(self):
+        qs = super(TweetPublishView, self).get_queryset()
+        return qs.filter(Q(author__is_staff=False) | Q(author=self.request.user))
+        
     def get(self, request, *args, **kwargs):
         tweet = self.get_object()
-        api = self.get_twitter_api(tweet.user)
+        api = self.get_twitter_api(tweet.author)
         try:
             status = api.update_status(tweet.content)
             tweet.twitter_id_str = status.id_str

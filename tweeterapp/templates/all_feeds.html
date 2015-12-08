@@ -51,8 +51,9 @@
                         </span></li>
                     </ul>
                     :if tweet.published_at == None
-                        :a(_class="btn btn-sm btn-success", href=url("publish", kwargs={'pk': tweet.id}))
-                            <i class="fa fa-send"></i> Publish
+                        :if user == tweet.author or not tweet.author.is_staff
+                            :a(_class="btn btn-sm btn-success", href=url("publish", kwargs={'pk': tweet.id}))
+                                <i class="fa fa-send"></i> Publish
                     :else
                         :a(_class="btn btn-sm btn-warning", href=url("retweet", kwargs={'pk': tweet.id}))
                             <i class="fa fa-retweet"></i> Retweet
