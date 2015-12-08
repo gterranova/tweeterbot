@@ -260,3 +260,5 @@ SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
 #    'social.pipeline.user.user_details',
 #    'social.pipeline.debug.debug'
 #)
+EMAIL_BACKEND = 'tweeterbot.backends.mail.EmailBackend'
+DEFAULT_FROM_EMAIL = 'info@terranovanet.it'

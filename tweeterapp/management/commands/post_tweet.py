@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from random import shuffle
 from django.conf import settings
+from django.core.mail import send_mail
 
 import tweepy
 from tweeterapp.models import Tweet, TweetStore
@@ -45,10 +46,16 @@ class Command(BaseCommand):
             tweet.save()
             random_tweet.used = True
             random_tweet.save()
-            self.stdout.write('Successfully posted "%s" for user %s' % (random_tweet.content, user))
+            message = 'Successfully posted "%s" for user %s' % (random_tweet.content, user)
+            send_mail("New tweet from %s" % user, message, settings.DEFAULT_FROM_EMAIL, ['gianpaoloterranova@gmail.com'])
+            self.stdout.write(message)
             
         except tweepy.TweepError, e:
             message = e.message
+            output = []
             for msg in message:
-                self.stderr.write('Error: User %s: %s' % (user, msg['message']))
+                output.append('Error: User %s: %s' % (user, msg['message']))
+            message = '\n'.join(output)
+            send_mail("Error posting tweet for %s" % user, message, settings.DEFAULT_FROM_EMAIL, ['gianpaoloterranova@gmail.com'])            
+            self.stderr.write(message)
                 
