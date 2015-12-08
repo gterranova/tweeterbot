@@ -20,11 +20,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         
         if options['user']:
-            available_users = get_user_model().objects.filter(username=options['user'])
+            available_users = list(get_user_model().objects.filter(username=options['user']))
         else:
-            available_users = get_user_model().objects.filter(is_staff=False).exclude(social_auth__iexact=None)
+            available_users = list(get_user_model().objects.filter(is_staff=False).exclude(social_auth__iexact=None))
             
-        shuffle(list(available_users))
+        shuffle(available_users)
         user = available_users[0]
         random_tweet = TweetStore.objects.random()
         
