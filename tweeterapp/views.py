@@ -20,6 +20,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.contrib import messages
+from django.db.models.signals import post_delete
 
 from models import Tweet, TweetStore
 from forms import TweetForm, TweetStoreForm
@@ -146,11 +147,32 @@ class TweetPublishView(LoginRequiredMixin, TweepyMixin, generic.DetailView):
             self.process_exc(e, user)
         return HttpResponseRedirect(reverse_lazy('feeds'))
 
-class TweetDeleteView(LoginRequiredMixin, AvailableBackendsMixin, generic.DeleteView):
+class TweetDeleteView(LoginRequiredMixin, TweepyMixin, AvailableBackendsMixin, generic.DeleteView):
     model = Tweet
     template_name = 'tweet_delete.html'
-    success_url = reverse_lazy('feeds')    
+    success_url = reverse_lazy('feeds')
+
+    def get_queryset(self):
+        qs = super(TweetDeleteView, self).get_queryset()
+        return qs.filter(Q(author__is_staff=False) | Q(author=self.request.user))
+
         
+def delete_tweet(sender, **kwargs):
+    tweet = kwargs.get('instance')    
+    if tweet.published_at:
+        consumer_key = settings.SOCIAL_AUTH_TWITTER_KEY
+        consumer_secret = settings.SOCIAL_AUTH_TWITTER_SECRET
+        access_token = tweet.author.social_auth.first().access_token
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token['oauth_token'], access_token['oauth_token_secret'])
+        api = tweepy.API(auth)
+        try:
+            api.destroy_status(tweet.twitter_id_str)
+        except tweepy.TweepError:
+            pass
+
+post_delete.connect(delete_tweet, Tweet)
+    
 class TweetIndexView(LoginRequiredMixin, AvailableBackendsMixin, generic.ListView):
     paginate_by = 9
     model = Tweet

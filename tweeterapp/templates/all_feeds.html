@@ -22,7 +22,11 @@
                         <strong>${tweet.author}</strong>&nbsp;
                     </div>
                     <span class="small"><a title="@${tweet.author.username} on Twitter" href="http://twitter.com/${tweet.author.username}" target="_blank" style="color: #999">@${tweet.author.username}</a>
-                        &sdot; ${tweet.published_at.strftime('%d %b %y %H:%M')}
+                        &sdot;
+                        :if tweet.published_at
+                            ${tweet.published_at.strftime('%d %b %y %H:%M')}
+                        :else
+                            Not published
                     </span>
                     <div class="medium">${tweet.content|urlize|linkify_twitter_status|url_target_blank}</div>
                 </div>
@@ -49,11 +53,12 @@
                     :if tweet.published_at == None
                         :a(_class="btn btn-sm btn-success", href=url("publish", kwargs={'pk': tweet.id}))
                             <i class="fa fa-send"></i> Publish
-                        :a(_class="btn btn-sm btn-danger", href=url("delete", kwargs={'pk': tweet.id}))
-                            <i class="fa fa-remove"></i> Delete
                     :else
                         :a(_class="btn btn-sm btn-warning", href=url("retweet", kwargs={'pk': tweet.id}))
                             <i class="fa fa-retweet"></i> Retweet
+                    :if user == tweet.author or not tweet.author.is_staff
+                        :a(_class="btn btn-sm btn-danger", href=url("delete", kwargs={'pk': tweet.id}))
+                            <i class="fa fa-remove"></i>
                     :div(_class="clearfix")
                 </div>
 

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models.aggregates import Count
 from random import randint
 from django.core.urlresolvers import reverse_lazy
+import itertools
 
 class TweetManager(models.Manager):
 
@@ -14,7 +15,10 @@ class TweetManager(models.Manager):
             importer = ImportTweets(request=request)
             importer.update_tweets()
         
-        return self.order_by('-published_at')
+        results = itertools.chain(
+                self.filter(published_at__isnull=True),
+                self.filter(published_at__isnull=False).order_by('-published_at'))
+        return list(results)
 
     def get_latest_tweets(self, user, update=False, request=None):
         if update:
@@ -22,7 +26,10 @@ class TweetManager(models.Manager):
             importer = ImportTweets(request=request)
             importer.update_user_tweets(user)
         
-        return self.filter(author=user).order_by('-published_at')
+        results = itertools.chain(
+                self.filter(author=user, published_at__isnull=True),
+                self.filter(author=user, published_at__isnull=False).order_by('-published_at'))
+        return list(results)
 
     def get_unpublished_tweets(self, user):
         return self.filter(author=user, published_at__isnull=True).order_by('-created_at')

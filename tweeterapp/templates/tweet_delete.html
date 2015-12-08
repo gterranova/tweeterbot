@@ -10,9 +10,12 @@
             :div(_class='row')
                 :div(_class='col-md-12')
                     <form action="" method="POST">
-                        <legend>Delete stored tweet</legend>
+                        <legend>Delete tweet</legend>
                         :p
-                            Are you sure you want to delete "${tweet}"? You will not keep track of retweets through the site!
+                            Are you sure you want to delete "${tweet}"? 
+                        :p
+                            :if tweet.published_at
+                                <strong>This will also delete the Twitter status!</strong>
                         <input type='hidden' name='csrfmiddlewaretoken' value='${csrf_token}' />
                         <input class="btn btn-danger" type="submit" value="Confirm" />
                     </form>
