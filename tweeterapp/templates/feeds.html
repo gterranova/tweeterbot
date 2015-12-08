@@ -21,7 +21,7 @@
                     <div class="title">
                         <strong>${tweet.author}</strong>&nbsp;
                     </div>
-                    <span class="small"><a title="@${tweet.author.username} on Twitter" href="http://twitter.com/barbara_arfelli" target="_blank" style="color: #999">@${tweet.author.username}</a>
+                    <span class="small"><a title="@${tweet.author.username} on Twitter" href="http://twitter.com/${tweet.author.username}" target="_blank" style="color: #999">@${tweet.author.username}</a>
                         &sdot; ${tweet.published_at.strftime('%d %b %y %H:%M')}
                     </span>
                     <div class="medium">${tweet.content|urlize|linkify_twitter_status|url_target_blank}</div>
