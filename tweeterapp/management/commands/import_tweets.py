@@ -17,7 +17,7 @@ class Command(BaseCommand):
         
         entries = []
         for tweet in tweets:
-            if len(tweet[0]) >= 140:
+            if len(tweet[0]) < 140:
                 saved_count += 1
                 entries.append(TweetStore(content=tweet[0]))
             
