@@ -46,8 +46,8 @@ class Command(BaseCommand):
             tweet.save()
             random_tweet.used = True
             random_tweet.save()
-            message = 'Successfully posted "%s" for user %s' % (random_tweet.content, user)
-            send_mail("[SocialTrumpet] New tweet from %s" % user, message, settings.DEFAULT_FROM_EMAIL, ['gianpaoloterranova@gmail.com','info@ema.mu'])
+            ##message = 'Successfully posted "%s" for user %s' % (random_tweet.content, user)
+            ##send_mail("[SocialTrumpet] New tweet from %s" % user, message, settings.DEFAULT_FROM_EMAIL, ['gianpaoloterranova@gmail.com','info@ema.mu'])
             self.stdout.write(message)
             
         except tweepy.TweepError, e:
