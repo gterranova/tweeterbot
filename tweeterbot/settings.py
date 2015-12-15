@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'social.apps.django_app.default',
     'tweeterapp',
+    'tweet_master',
 ]
 
 MIDDLEWARE_CLASSES = [

@@ -1,0 +1,29 @@
+:import "base.html"
+:#@load_lib('bootstrap')
+:#@load_lib('twitter_feed_tags')
+:@load_lib('backend_utils')
+:@body_class = ''
+
+:%content
+    :div(_class="row")
+        :div(_class="tab-contents")        
+            :div(_class='row')
+                :div(_class='col-md-12')
+                    :ul(_class="nav")
+                        :for usr in users
+                            :li
+                                ${usr.username}
+                                :if usr != user
+                                    :if usr not in following
+                                        :a(_class="small btn pull-right", href=url('master_add', kwargs={'username': usr.username}))
+                                            Follow
+                                    :else
+                                        :a(_class="small btn pull-right text-danger", href=url('master_remove', kwargs={'username': usr.username}))
+                                            Unfollow
+                                    :if usr in followers
+                                        :a(_class="small btn pull-right", href=url('follower_remove', kwargs={'username': usr.username}))
+                                            Remove follower
+                            :hr
+:%footer_base
+:%footer
+:base(head_title="Users")

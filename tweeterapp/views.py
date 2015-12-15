@@ -82,7 +82,7 @@ class HomeView(AvailableBackendsMixin, TweepyMixin, generic.CreateView):
 
     def get_form(self):
         form = TweetForm(auto_id=False, **self.get_form_kwargs())
-        form.fields['author'].queryset = get_user_model().objects.filter(Q(is_staff=False) | Q(pk=self.request.user.id)).exclude(social_auth__iexact=None)
+        form.fields['author'].queryset = get_user_model().objects.filter(Q(pk=self.request.user.id) | Q(serving__master=self.request.user)).exclude(social_auth__iexact=None)
         return form
         
     def get_initial(self):
@@ -201,7 +201,7 @@ class RetweetRedirectView(LoginRequiredMixin, TweepyMixin, generic.RedirectView)
     permanent = False
     def get(self, request, *args, **kwargs):
         tweet = Tweet.objects.get(pk=self.kwargs['pk'])
-        users = get_user_model().objects.filter(is_staff=False).exclude(pk=self.request.user.id)
+        users = get_user_model().objects.filter(serving__master=self.request.user)
         users = [u for u in users.all() if u.social_auth.count() != 0 and not u.retwits.filter(id=tweet.id).exists()]
         shuffle(users)
         if users and len(users) > 0:

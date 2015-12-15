@@ -6,6 +6,7 @@ from django.db.models.aggregates import Count
 from random import randint
 from django.core.urlresolvers import reverse_lazy
 import itertools
+from django.db.models import Q
 
 class TweetManager(models.Manager):
 
@@ -16,8 +17,8 @@ class TweetManager(models.Manager):
             importer.update_tweets()
         
         results = itertools.chain(
-                self.filter(published_at__isnull=True),
-                self.filter(published_at__isnull=False).order_by('-published_at'))
+                self.filter(published_at__isnull=True).filter(Q(author=request.user) | Q(author__serving__master=request.user)),
+                self.filter(published_at__isnull=False).filter(Q(author=request.user) | Q(author__serving__master=request.user)).order_by('-published_at'))
         return list(results)
 
     def get_latest_tweets(self, user, update=False, request=None):

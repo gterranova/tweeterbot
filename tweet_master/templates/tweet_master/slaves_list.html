@@ -1,0 +1,19 @@
+:import "base.html"
+:#@load_lib('bootstrap')
+:#@load_lib('twitter_feed_tags')
+:@load_lib('backend_utils')
+:@body_class = ''
+
+:%content
+    :div(_class="row")
+        :div(_class="tab-contents")        
+            :div(_class='row')
+                :div(_class='col-md-12')
+                    :ul
+                        :for slave in slaves
+                            :li
+                                ${slave.username}
+
+:%footer_base
+:%footer
+:base(head_title="Followers of %s" % master.username)
