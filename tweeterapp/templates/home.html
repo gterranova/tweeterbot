@@ -3,7 +3,8 @@
 :@body_class = (user.is_authenticated() != True) and 'home' or ''
 
 :%theme_script
-    ${form.media}
+    :if user.is_authenticated()
+        ${form.media}
 
 :%content
     :if user.is_authenticated()
