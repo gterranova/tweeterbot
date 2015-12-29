@@ -81,9 +81,11 @@ class HomeView(AvailableBackendsMixin, TweepyMixin, generic.CreateView):
     template_name = 'home.html'
 
     def get_form(self):
-        form = TweetForm(auto_id=False, **self.get_form_kwargs())
-        form.fields['author'].queryset = get_user_model().objects.filter(Q(pk=self.request.user.id) | Q(serving__master=self.request.user)).exclude(social_auth__iexact=None)
-        return form
+        if self.request.user.is_authenticated():
+            form = TweetForm(auto_id=False, **self.get_form_kwargs())
+            form.fields['author'].queryset = get_user_model().objects.filter(Q(pk=self.request.user.id) | Q(serving__master=self.request.user)).exclude(social_auth__iexact=None)
+            return form
+        return None
         
     def get_initial(self):
         initial = super(HomeView, self).get_initial()
